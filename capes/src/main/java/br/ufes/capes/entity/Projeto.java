@@ -10,10 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Projeto {
-    private String tipo;
+    private String tipoDoRecurso;
     private String title;
     private String resumo;
     private String autor;
     private String url;
-    private String AnoLocal;
+    private String ano;
+    private String publicacao;
 }
