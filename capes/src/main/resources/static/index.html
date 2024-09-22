@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tipo do hbase</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Row</th>
+        <th>Family1:Qualifier1</th>
+        <th>Family1:Qualifier2</th>
+    </tr>
+    <tr>
+        <td>Row1</td>
+        <td>Family1:Qualifier1</td>
+        <td>Family1:Qualifier2</td>
+    </tr>
+    <tr>
+        <td>Row2</td>
+        <td>Family1:Qualifier1</td>
+        <td>Family2:Qualifier3</td>
+    </tr>
+    <tr>
+        <td>Row3</td>
+        <td>Family1:Qualifier1</td>
+        <td>Family2:Qualifier3</td>
+    </tr>
+</table>
+</body>
+</html>

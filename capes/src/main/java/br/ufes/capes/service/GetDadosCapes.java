@@ -1,6 +1,7 @@
 package br.ufes.capes.service;
 
 import br.ufes.capes.entity.Projeto;
+import br.ufes.capes.entity.dao.HbaseClientOperations;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.hadoop.hbase.exceptions.IllegalArgumentIOException;
@@ -9,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,9 +24,15 @@ import java.util.regex.Pattern;
 @Service
 @AllArgsConstructor
 @Log4j2
+@EnableScheduling
 public class GetDadosCapes {
+    private final HbaseClientOperations hbaseClientOperations;
+    private static final String TIME_ZONE = "America/Sao_Paulo";
 
-    public List<Projeto> getDadosCapes() throws IOException, InterruptedException {
+    @Scheduled(cron = "0 0 * * * *", zone = TIME_ZONE)
+    public void getDadosCapes() throws IOException, InterruptedException {
+        hbaseClientOperations.createTable();
+
         WebDriver driver = new ChromeDriver();
         List<Projeto> todosProjetos = new ArrayList<>();
 
@@ -40,7 +49,6 @@ public class GetDadosCapes {
 
         Pattern pattern = Pattern.compile("para (\\d{1,3}(?:\\.\\d{3})*) \\(");
         Matcher matcher = pattern.matcher(input);
-
 
         if (!matcher.find()) {
             throw new IllegalArgumentIOException("Não foi possível encontrar o total de páginas");
@@ -65,7 +73,6 @@ public class GetDadosCapes {
             Elements universidade = doc.select("[id^=conteudo-] > p:nth-child(5) > b:nth-child(2)");
             Elements tipo = doc.select("[id^=conteudo-] > div:nth-child(1) > div > p > b");
 
-
             List<Projeto> projetos = new ArrayList<>();
             int minSize = Math.min(Math.min(title.size(), li.size()), Math.min(resume.size(), Math.min(getContent.size(), Math.min(ano.size(), Math.min(universidade.size(), tipo.size())))));
 
@@ -89,15 +96,28 @@ public class GetDadosCapes {
                         .build();
                 log.info(projeto);
                 projetos.add(projeto);
+
+                if (!hbaseClientOperations.dataExists(titulo, "artigos", "autor")) {
+                    hbaseClientOperations.insertData(titulo, "artigos", "autor", autor);
+                    hbaseClientOperations.insertData(titulo, "artigos", "resumo", resumoTexto);
+                    hbaseClientOperations.insertData(titulo, "artigos", "url", linkHref);
+                    hbaseClientOperations.insertData(titulo, "artigos", "ano", anoPublic);
+                    hbaseClientOperations.insertData(titulo, "artigos", "publicacao", localDePublicacao);
+                    hbaseClientOperations.insertData(titulo, "artigos", "tipoDoRecurso", tipoDoRecurso);
+                }
             }
 
             todosProjetos.addAll(projetos);
             log.info("Total de projetos até agora: " + todosProjetos.size());
-
             Thread.sleep(1000);
         }
 
         driver.quit();
-        return todosProjetos;
+    }
+
+
+    public List<Projeto> listDadosCapes() throws IOException {
+        hbaseClientOperations.createTable();
+        return hbaseClientOperations.listAllData();
     }
 }
