@@ -92,4 +92,42 @@ public class GetPeriodicosController {
         ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", response.getOutputStream());
     }
 
+    @GetMapping("/barras-artigos-por-universidade")
+    public void getBarChartUni(HttpServletResponse response) throws IOException {
+        List<Projeto> projetos = getDadosCapes.listDadosCapes();
+
+        Map<String, Long> artigosPorAno = projetos.stream()
+                .collect(Collectors.groupingBy(Projeto::getPublicacao, Collectors.counting()));
+
+        List<Map.Entry<String, Long>> sorted = artigosPorAno.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(20)
+                .collect(Collectors.toList());
+
+        List<String> publicacoesTop = sorted.stream()
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        List<Long> numerosArtigosTop = sorted.stream()
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+
+
+        CategoryChart chart = new CategoryChartBuilder()
+                .width(1500).height(600)
+                .title("Top 20 Publicações por Número de Artigos")
+                .xAxisTitle("Publicação")
+                .yAxisTitle("Número de Artigos")
+
+                .build();
+        chart.addSeries("Artigos", publicacoesTop, numerosArtigosTop);
+
+
+        chart.getStyler().setXAxisLabelRotation(90);
+        response.setContentType("image/png");
+        ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", response.getOutputStream());
+    }
+
+
+
 }

@@ -29,7 +29,7 @@ public class GetDadosCapes {
     private final HbaseClientOperations hbaseClientOperations;
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
-    @Scheduled(cron = "0 0 * * * *", zone = TIME_ZONE)
+    @Scheduled(cron = "0 0 12 * * *", zone = TIME_ZONE)
     public void getDadosCapes() throws IOException, InterruptedException {
         hbaseClientOperations.createTable();
 
